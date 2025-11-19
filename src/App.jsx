@@ -1,71 +1,48 @@
+import { useState } from 'react'
+import Hero from './components/Hero'
+import Discovery from './components/Discovery'
+
 function App() {
+  const [authOpen, setAuthOpen] = useState(false)
+  const [authMode, setAuthMode] = useState('login')
+
+  const openAuth = (mode) => { setAuthMode(mode); setAuthOpen(true) }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Subtle pattern overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.05),transparent_50%)]"></div>
-
-      <div className="relative min-h-screen flex items-center justify-center p-8">
-        <div className="max-w-2xl w-full">
-          {/* Header with Flames icon */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center mb-6">
-              <img
-                src="/flame-icon.svg"
-                alt="Flames"
-                className="w-24 h-24 drop-shadow-[0_0_25px_rgba(59,130,246,0.5)]"
-              />
-            </div>
-
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
-              Flames Blue
-            </h1>
-
-            <p className="text-xl text-blue-200 mb-6">
-              Build applications through conversation
-            </p>
-          </div>
-
-          {/* Instructions */}
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-8 shadow-xl mb-6">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                1
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Describe your idea</h3>
-                <p className="text-blue-200/80 text-sm">Use the chat panel on the left to tell the AI what you want to build</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                2
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Watch it build</h3>
-                <p className="text-blue-200/80 text-sm">Your app will appear in this preview as the AI generates the code</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                3
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Refine and iterate</h3>
-                <p className="text-blue-200/80 text-sm">Continue the conversation to add features and make changes</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-sm text-blue-300/60">
-              No coding required • Just describe what you want
-            </p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
+        {/* Top bar */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="text-xl font-semibold">LeagueHub</div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => openAuth('login')} className="rounded-full bg-white/10 px-4 py-2 text-sm">Login</button>
+            <button onClick={() => openAuth('signup')} className="rounded-full bg-blue-600 px-4 py-2 text-sm text-white">Sign up</button>
           </div>
         </div>
+
+        <Hero onOpenAuth={(m) => openAuth(m)} />
+
+        <h2 className="mt-10 text-xl font-semibold">Trending leagues</h2>
+        <Discovery />
       </div>
+
+      {/* Simple mock auth modal */}
+      {authOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-slate-900 p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="text-lg font-semibold">{authMode === 'signup' ? 'Create your account' : 'Welcome back'}</div>
+              <button className="rounded bg-white/10 px-2 py-1 text-xs" onClick={() => setAuthOpen(false)}>Close</button>
+            </div>
+            <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
+              <input className="w-full rounded-md border border-white/10 bg-slate-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-600" placeholder="Email" type="email" required />
+              <input className="w-full rounded-md border border-white/10 bg-slate-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-600" placeholder="Password" type="password" required />
+              <button className="w-full rounded-md bg-blue-600 px-3 py-2 text-sm font-medium">{authMode === 'signup' ? 'Sign up' : 'Login'}</button>
+              <div className="text-center text-xs text-slate-400">By continuing you agree to our Terms</div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
