@@ -1,10 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Hero from './components/Hero'
 import Discovery from './components/Discovery'
+import AuthModal from './components/AuthModal'
+import Recommended from './components/Recommended'
+
+const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
 function App() {
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState('login')
+  const [token, setToken] = useState(null)
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const t = localStorage.getItem('lh_token')
+    if (t) {
+      setToken(t)
+      fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${t}` } })
+        .then(r => r.ok ? r.json() : null)
+        .then(u => setUser(u))
+        .catch(() => {})
+    }
+  }, [])
 
   const openAuth = (mode) => { setAuthMode(mode); setAuthOpen(true) }
 
@@ -15,8 +32,17 @@ function App() {
         <div className="mb-6 flex items-center justify-between">
           <div className="text-xl font-semibold">LeagueHub</div>
           <div className="flex items-center gap-3">
-            <button onClick={() => openAuth('login')} className="rounded-full bg-white/10 px-4 py-2 text-sm">Login</button>
-            <button onClick={() => openAuth('signup')} className="rounded-full bg-blue-600 px-4 py-2 text-sm text-white">Sign up</button>
+            {user ? (
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <span className="hidden sm:inline">{user.email}</span>
+                <button onClick={() => { localStorage.removeItem('lh_token'); setUser(null); setToken(null) }} className="rounded-full bg-white/10 px-4 py-2 text-sm">Logout</button>
+              </div>
+            ) : (
+              <>
+                <button onClick={() => openAuth('login')} className="rounded-full bg-white/10 px-4 py-2 text-sm">Login</button>
+                <button onClick={() => openAuth('signup')} className="rounded-full bg-blue-600 px-4 py-2 text-sm text-white">Sign up</button>
+              </>
+            )}
           </div>
         </div>
 
@@ -24,25 +50,21 @@ function App() {
 
         <h2 className="mt-10 text-xl font-semibold">Trending leagues</h2>
         <Discovery />
+
+        {user && <Recommended userId={user.id} />}
       </div>
 
-      {/* Simple mock auth modal */}
-      {authOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-xl border border-white/10 bg-slate-900 p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="text-lg font-semibold">{authMode === 'signup' ? 'Create your account' : 'Welcome back'}</div>
-              <button className="rounded bg-white/10 px-2 py-1 text-xs" onClick={() => setAuthOpen(false)}>Close</button>
-            </div>
-            <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
-              <input className="w-full rounded-md border border-white/10 bg-slate-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-600" placeholder="Email" type="email" required />
-              <input className="w-full rounded-md border border-white/10 bg-slate-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-600" placeholder="Password" type="password" required />
-              <button className="w-full rounded-md bg-blue-600 px-3 py-2 text-sm font-medium">{authMode === 'signup' ? 'Sign up' : 'Login'}</button>
-              <div className="text-center text-xs text-slate-400">By continuing you agree to our Terms</div>
-            </form>
-          </div>
-        </div>
-      )}
+      <AuthModal
+        open={authOpen}
+        mode={authMode}
+        onClose={() => setAuthOpen(false)}
+        onAuthed={({ token }) => {
+          setToken(token)
+          fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.ok ? r.json() : null)
+            .then(u => setUser(u))
+        }}
+      />
     </div>
   )
 }
